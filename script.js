@@ -376,39 +376,52 @@ const app = {
         if (!keys) {
             keys = ['A', 'B', 'C', 'D'];
             if (this.settings.shuffleOptions) {
-                // Phân loại đáp án đặc biệt (chứa các từ như "tất cả", "cả A và B", "đều đúng", v.v.)
-                const specialKeywords = [
-                    "tất cả", "đều đúng", "đều sai", "cả a và", "cả b và", "cả c và", 
-                    "cả 3", "cả ba", "không có", "tất cả các", "các ý trên", "các phương án trên"
-                ];
-                
-                let normalKeys = [];
-                let specialKeys = [];
+                // Kiểm tra xem câu hỏi có chứa đáp án chỉ định cụ thể chữ cái không (ví dụ: "A và B", "đáp án B hoặc C")
+                // Nếu có, KHÔNG trộn đáp án để tránh sai lệch tham chiếu chữ cái hiển thị.
+                let hasLetterReference = false;
+                const letterRefRegex = /\b[A-D]\s*(và|hoặc|,)\s*[A-D]\b/i;
                 
                 keys.forEach(k => {
-                    const text = (q.options[k] || "").toLowerCase().trim();
-                    const isSpecial = specialKeywords.some(keyword => text.includes(keyword));
-                    if (isSpecial) {
-                        specialKeys.push(k);
-                    } else {
-                        normalKeys.push(k);
+                    if (letterRefRegex.test(q.options[k] || "")) {
+                        hasLetterReference = true;
                     }
                 });
                 
-                // Trộn ngẫu nhiên các câu hỏi bình thường bằng thuật toán Fisher-Yates chuẩn hóa
-                for (let i = normalKeys.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [normalKeys[i], normalKeys[j]] = [normalKeys[j], normalKeys[i]];
+                if (!hasLetterReference) {
+                    // Phân loại đáp án đặc biệt (chứa các từ như "tất cả", "đều đúng", "đều sai", "cả 3", "không có", v.v.)
+                    const specialKeywords = [
+                        "tất cả", "đều đúng", "đều sai", 
+                        "cả 3", "cả ba", "không có", "tất cả các", "các ý trên", "các phương án trên"
+                    ];
+                    
+                    let normalKeys = [];
+                    let specialKeys = [];
+                    
+                    keys.forEach(k => {
+                        const text = (q.options[k] || "").toLowerCase().trim();
+                        const isSpecial = specialKeywords.some(keyword => text.includes(keyword));
+                        if (isSpecial) {
+                            specialKeys.push(k);
+                        } else {
+                            normalKeys.push(k);
+                        }
+                    });
+                    
+                    // Trộn ngẫu nhiên các câu hỏi bình thường bằng thuật toán Fisher-Yates chuẩn hóa
+                    for (let i = normalKeys.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [normalKeys[i], normalKeys[j]] = [normalKeys[j], normalKeys[i]];
+                    }
+                    
+                    // Trộn ngẫu nhiên các câu hỏi đặc biệt nếu có nhiều hơn 1
+                    for (let i = specialKeys.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [specialKeys[i], specialKeys[j]] = [specialKeys[j], specialKeys[i]];
+                    }
+                    
+                    // Ghép lại: Đáp án thường lên trước, đáp án đặc biệt luôn xếp ở dưới cùng
+                    keys = [...normalKeys, ...specialKeys];
                 }
-                
-                // Trộn ngẫu nhiên các câu hỏi đặc biệt nếu có nhiều hơn 1
-                for (let i = specialKeys.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [specialKeys[i], specialKeys[j]] = [specialKeys[j], specialKeys[i]];
-                }
-                
-                // Ghép lại: Đáp án thường lên trước, đáp án đặc biệt luôn xếp ở dưới cùng
-                keys = [...normalKeys, ...specialKeys];
             }
             q.sessionOptionsOrder = keys;
         }
