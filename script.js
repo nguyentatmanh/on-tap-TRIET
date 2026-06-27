@@ -164,6 +164,8 @@ const app = {
                     ? `Chào mừng ${this.studentName} đến với giải pháp ôn thi trắc nghiệm tối ưu!`
                     : "Giải pháp ôn thi trắc nghiệm tối ưu dành cho sinh viên";
             }
+        } else if (screenId === 'screen-data-import') {
+            this.renderQuestionManagerList();
         }
     },
 
@@ -719,118 +721,7 @@ const app = {
         }
     },
 
-    handleFileUpload: function(event) {
-        const file = event.target.files[0];
-        if (!file) return;
 
-        const status = document.getElementById('import-status');
-        status.style.color = 'var(--text-primary)';
-        status.innerText = 'Đang phân tích file Word...';
-
-        const reader = new FileReader();
-        reader.onload = function(loadEvent) {
-            const arrayBuffer = loadEvent.target.result;
-            
-            // Sử dụng mammoth.js để giải nén text từ docx
-            mammoth.extractRawText({arrayBuffer: arrayBuffer})
-                .then(function(result) {
-                    const text = result.value;
-                    document.getElementById('import-text').value = text;
-                    app.importData(); // Tự động xử lý
-                })
-                .catch(function(err) {
-                    status.style.color = 'var(--danger)';
-                    status.innerText = 'Lỗi đọc file Word: ' + err.message;
-                });
-        };
-        reader.readAsArrayBuffer(file);
-    },
-
-    importData: function() {
-        const text = document.getElementById('import-text').value;
-        if (!text.trim()) {
-            alert("Vui lòng dán nội dung hoặc chọn file Word.");
-            return;
-        }
-
-        let updateCount = 0;
-        
-        // Regex bắt "Câu 1:", "Câu 10a.", v.v...
-        const regex = /Câu\s+(\d+[ab]?)\s*[:\.]([\s\S]*?)(?=Câu\s+\d+[ab]?\s*[:\.]|$)/gi;
-        let match;
-        while ((match = regex.exec(text)) !== null) {
-            const id = match[1].toLowerCase();
-            const content = match[2];
-
-            const optRegex = /A\.\s*([\s\S]*?)B\.\s*([\s\S]*?)C\.\s*([\s\S]*?)D\.\s*([\s\S]*?)$/gi;
-            const optMatch = optRegex.exec(content);
-
-            const qRef = defaultQuestions.find(q => q.id.toLowerCase() === id);
-            if (qRef) {
-                if (optMatch) {
-                    qRef.text = content.replace(optMatch[0], '').trim();
-                    qRef.options['A'] = optMatch[1].trim();
-                    qRef.options['B'] = optMatch[2].trim();
-                    qRef.options['C'] = optMatch[3].trim();
-                    qRef.options['D'] = optMatch[4].trim();
-                } else {
-                    qRef.text = content.trim(); 
-                }
-                updateCount++;
-            }
-        }
-
-        const status = document.getElementById('import-status');
-        if (updateCount > 0) {
-            status.style.color = 'var(--success)';
-            status.innerText = `Đã nhận diện thành công văn bản cho ${updateCount} câu hỏi!`;
-            
-            // Lưu dữ liệu đã chèn vào localStorage để giữ tạm
-            localStorage.setItem('savedQuestions', JSON.stringify(defaultQuestions));
-            
-            // Hiển thị nút Tải xuống file data.js mới
-            document.getElementById('export-section').style.display = 'block';
-            document.getElementById('export-text').value = JSON.stringify(defaultQuestions, null, 2);
-        } else {
-            status.style.color = 'var(--danger)';
-            status.innerText = `Không tìm thấy câu hỏi nào hợp lệ. Đảm bảo cấu trúc có "Câu 1:", "A.", "B.", "C.", "D."`;
-        }
-    },
-
-    downloadDataFile: function() {
-        const fileContent = `const rawAnswers = \`${rawAnswers.trim()}\`;\n\nlet defaultQuestions = ${JSON.stringify(defaultQuestions, null, 4)};`;
-        
-        const blob = new Blob([fileContent], { type: "text/javascript" });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = "data.js";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    },
-
-    switchImportTab: function(tab) {
-        const btnAuto = document.getElementById('tab-btn-auto');
-        const btnManual = document.getElementById('tab-btn-manual');
-        const contentAuto = document.getElementById('import-tab-auto');
-        const contentManual = document.getElementById('import-tab-manual');
-        
-        if (tab === 'auto') {
-            btnAuto.classList.add('active');
-            btnManual.classList.remove('active');
-            contentAuto.style.display = 'block';
-            contentManual.style.display = 'none';
-        } else {
-            btnAuto.classList.remove('active');
-            btnManual.classList.add('active');
-            contentAuto.style.display = 'none';
-            contentManual.style.display = 'block';
-            this.renderQuestionManagerList();
-        }
-    },
 
     renderQuestionManagerList: function() {
         const listContainer = document.getElementById('manager-q-list');

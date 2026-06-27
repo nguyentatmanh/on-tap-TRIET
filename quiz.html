@@ -6,7 +6,6 @@
     <title>Hệ Thống Ôn Thi Trắc Nghiệm Triết Học</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
 </head>
 <body>
     <!-- App Header -->
@@ -203,39 +202,10 @@
         <div id="screen-data-import" class="screen glass-panel">
             <button class="btn-back" onclick="app.navigate('screen-home')">← Quay lại</button>
             <h2>Cập Nhật & Quản Lý Dữ Liệu</h2>
-            <p class="section-desc">Tùy chọn tải lên tệp mới hoặc tự tay thêm, chỉnh sửa danh sách câu hỏi trắc nghiệm của hệ thống.</p>
+            <p class="section-desc">Tự tay thêm mới, sửa đổi hoặc xóa các câu hỏi trắc nghiệm của hệ thống ôn tập.</p>
             
-            <!-- Tab Menu -->
-            <div class="tab-menu" style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-                <button id="tab-btn-auto" class="tab-btn active" onclick="app.switchImportTab('auto')">⚡ Nhập tự động (Word/Text)</button>
-                <button id="tab-btn-manual" class="tab-btn" onclick="app.switchImportTab('manual')">🛠️ Quản lý & Thêm thủ công</button>
-            </div>
-            
-            <!-- Tab 1: Auto Import -->
-            <div id="import-tab-auto" class="import-tab-content">
-                <div class="settings-group" style="text-align: center;">
-                    <label for="docx-upload" class="btn btn-secondary btn-full" style="cursor: pointer; max-width: 400px; margin: 0 auto;">
-                        <span class="icon">📂</span> Chọn file Word (.docx) câu hỏi
-                    </label>
-                    <input type="file" id="docx-upload" accept=".docx" style="display: none;" onchange="app.handleFileUpload(event)">
-                    <p class="text-small text-muted mt-2">Định dạng khuyến nghị: các dòng có dạng "Câu 1: ...", "A. ... B. ... C. ... D. ..."</p>
-                </div>
-                
-                <textarea id="import-text" class="glass-textarea" placeholder="Hoặc dán trực tiếp nội dung văn bản câu hỏi vào đây... Ví dụ:&#10;Câu 1: Triết học ra đời vào khoảng thời gian nào?&#10;A. Thế kỷ VIII - thế kỷ VI trước Công nguyên.&#10;B. Thế kỷ V trước Công nguyên.&#10;C. Thế kỷ III sau Công nguyên.&#10;D. Thế kỷ X sau Công nguyên."></textarea>
-                
-                <button class="btn btn-primary btn-full mt-4" onclick="app.importData()">⚡ Phân Tích & Cập Nhật Hệ Thống</button>
-                
-                <div id="export-section" style="display: none; margin-top: 20px; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 20px;">
-                    <p class="text-small" style="color: var(--success); margin-bottom: 10px; font-weight: 600;">✔ Nhận diện thành công! Tải file dữ liệu mới và chép đè vào data.js nếu bạn đang chạy mã nguồn cục bộ.</p>
-                    <button class="btn btn-primary" style="background: var(--success);" onclick="app.downloadDataFile()">⬇️ Tải xuống file data.js mới</button>
-                    <textarea id="export-text" class="glass-textarea mt-2" style="height: 120px; font-family: monospace; font-size: 0.85rem;"></textarea>
-                </div>
-                
-                <p id="import-status" class="mt-2 text-center" style="font-weight: 600;"></p>
-            </div>
-
-            <!-- Tab 2: Manual Manager -->
-            <div id="import-tab-manual" class="import-tab-content" style="display: none;">
+            <!-- Manual Manager -->
+            <div id="import-tab-manual" class="import-tab-content">
                 <div class="manager-controls" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
                     <div style="display: flex; gap: 12px; flex: 1; min-width: 280px;">
                         <input type="text" id="manager-search" class="glass-input" placeholder="🔍 Tìm kiếm theo nội dung hoặc mã câu hỏi..." oninput="app.renderQuestionManagerList()">
