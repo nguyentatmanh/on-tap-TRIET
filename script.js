@@ -1021,6 +1021,20 @@ const app = {
         this.renderQuestionManagerList();
         this.updateHomeStats();
         alert("Đã xóa câu hỏi thành công!");
+    },
+
+    showQRModal: function() {
+        const modal = document.getElementById('modal-qr-preview');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    },
+
+    closeQRModal: function() {
+        const modal = document.getElementById('modal-qr-preview');
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 };
 
