@@ -1480,9 +1480,36 @@ h2 {
 }
 
 /* Responsive adjustments */
+@media (max-width: 991px) {
+    /* Quiz screen wrapping style */
+    .screen-quiz-layout {
+        gap: 16px;
+    }
+    .quiz-sidebar-panel {
+        min-height: auto !important;
+        gap: 16px;
+        padding: 20px;
+    }
+    .question-grid {
+        grid-template-columns: repeat(8, 1fr) !important;
+        max-height: 220px;
+    }
+    
+    /* Menu cards layout for tablets */
+    .menu-cards {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .menu-cards .menu-card:last-child {
+        grid-column: span 2;
+    }
+}
+
 @media (max-width: 768px) {
     .app-header {
-        padding: 16px;
+        padding: 14px 16px;
+    }
+    .header-logo .logo-main {
+        font-size: 1.25rem;
     }
     .app-container {
         padding: 16px;
@@ -1491,7 +1518,11 @@ h2 {
         padding: 24px 16px;
     }
     h1.title-gradient {
-        font-size: 2.2rem;
+        font-size: 2.1rem;
+    }
+    .subtitle {
+        font-size: 1.05rem;
+        margin-bottom: 24px;
     }
     .question-text {
         font-size: 1.1rem;
@@ -1499,6 +1530,51 @@ h2 {
     .option-btn {
         padding: 14px 16px;
         font-size: 0.95rem;
+        border-radius: 12px;
+    }
+    .quiz-main-panel {
+        min-height: auto !important;
+        padding: 20px 16px;
+    }
+    .question-grid {
+        grid-template-columns: repeat(6, 1fr) !important;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Welcome screen login modal padding on mobile */
+    .welcome-container {
+        margin: 20px auto;
+        padding: 24px 16px !important;
+    }
+    .welcome-icon {
+        font-size: 3rem;
+    }
+    
+    /* Home Menu Cards layout for mobile */
+    .menu-cards {
+        grid-template-columns: 1fr !important;
+    }
+    .menu-cards .menu-card:last-child {
+        grid-column: span 1;
+    }
+    .menu-card {
+        padding: 20px;
+    }
+    
+    /* Donation Card vertical alignment for mobile */
+    .author-donation-card {
+        padding: 16px !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 16px !important;
+    }
+    .author-donation-card div {
+        text-align: center !important;
+    }
+    
+    .logo-sub {
+        display: none; /* Hide subtitle logo on mobile to save space */
     }
 }
 
