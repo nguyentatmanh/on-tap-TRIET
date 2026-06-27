@@ -86,7 +86,10 @@
 
             <!-- Donation & Author Info -->
             <div class="author-donation-card mt-4" style="margin-top: 30px; padding: 24px; border-radius: 20px; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center; text-align: left;">
-                <img src="QR.jpg" alt="Mã QR Ủng hộ" onclick="app.showQRModal()" style="width: 130px; height: 130px; border-radius: 14px; border: 2px solid var(--glass-border); box-shadow: var(--shadow-sm); object-fit: contain; background: #ffffff; padding: 6px; cursor: pointer; transition: all 0.25s;" title="Nhấp vào để phóng to">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
+                    <img src="QR.jpg" alt="Mã QR Ủng hộ" onclick="app.showQRModal()" class="donation-qr-img" style="width: 130px; height: 130px; border-radius: 14px; border: 2px solid var(--glass-border); box-shadow: var(--shadow-sm); object-fit: contain; background: #ffffff; padding: 6px; cursor: pointer; transition: all 0.25s;" title="Nhấp vào để phóng to">
+                    <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.2px; transition: color 0.2s;">🔍 Nhấp vào để phóng to</span>
+                </div>
                 <div style="max-width: 480px; min-width: 250px;">
                     <h4 style="margin: 0 0 8px 0; font-family: var(--font-heading); font-size: 1.15rem; color: var(--primary); font-weight: 700;">Người thực hiện: Nguyễn Tất Mạnh</h4>
                     <p style="margin: 0 0 12px 0; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.45;">Nếu thấy ứng dụng hay và bổ ích, hãy ủng hộ mình cốc nước để duy trì nhé! Cảm ơn bạn rất nhiều! 💖</p>
