@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Ôn Thi Trắc Nghiệm Triết Học</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-logo" onclick="app.navigate('screen-home')">
+            <span class="logo-icon">🧠</span>
+            <div class="logo-text">
+                <span class="logo-main">Triết Học Mác - Lênin</span>
+                <span class="logo-sub">Ôn tập & Thi Thử Trực Tuyến</span>
+            </div>
+        </div>
+        <div class="header-right-group">
+            <div id="user-badge" class="user-badge" style="display: none;" onclick="app.changeName()" title="Nhấn vào đây để đổi tên">
+                <span class="user-icon">👤</span> <span id="user-display-name">Sinh Viên</span>
+            </div>
+            <button id="btn-theme-toggle" class="theme-toggle-btn" onclick="app.toggleTheme()">
+                <span class="theme-icon">🌙</span> <span class="theme-text">Giao diện tối</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        
+        <!-- Screen: Main Menu -->
+        <div id="screen-home" class="screen active glass-panel">
+            <h1 class="title-gradient">Hệ Thống Ôn Luyện Triết Học</h1>
+            <p class="subtitle" id="home-greeting">Giải pháp ôn thi trắc nghiệm tối ưu dành cho sinh viên</p>
+            
+            <div class="menu-cards">
+                <div class="menu-card btn-practice-card" onclick="app.navigate('screen-practice-settings')">
+                    <div class="card-icon">📚</div>
+                    <div class="card-info">
+                        <h3>Chế Độ Ôn Tập</h3>
+                        <p>Học theo chương, có đáp án ngay, tự điều chỉnh tốc độ học tập.</p>
+                    </div>
+                    <span class="arrow-right">→</span>
+                </div>
+
+                <div class="menu-card btn-exam-card" onclick="app.navigate('screen-exam-settings')">
+                    <div class="card-icon">⏱️</div>
+                    <div class="card-info">
+                        <h3>Thi Thử (Mock Exam)</h3>
+                        <p>Đề thi 40 câu ngẫu nhiên phân bổ đều các chương, tính giờ như thi thật.</p>
+                    </div>
+                    <span class="arrow-right">→</span>
+                </div>
+
+                <div class="menu-card btn-import-card" onclick="app.navigate('screen-data-import')">
+                    <div class="card-icon">📝</div>
+                    <div class="card-info">
+                        <h3>Cập Nhật Dữ Liệu</h3>
+                        <p>Nhập thêm câu hỏi tự động từ file Word (.docx) hoặc dán trực tiếp văn bản.</p>
+                    </div>
+                    <span class="arrow-right">→</span>
+                </div>
+            </div>
+
+            <div class="home-stats-preview mt-4">
+                <div class="stats-preview-title">📊 Tiến Trình Học Tập Của Bạn</div>
+                <div class="stats-preview-row">
+                    <div class="stat-box">
+                        <span id="home-stat-practices">0</span>
+                        <p>Lần ôn tập</p>
+                    </div>
+                    <div class="stat-box">
+                        <span id="home-stat-exams">0</span>
+                        <p>Lần thi thử</p>
+                    </div>
+                    <div class="stat-box">
+                        <span id="home-stat-avg-score">0.0</span>
+                        <p>Điểm TB thi thử</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline btn-small mt-3" style="width: auto; margin: 0 auto; display: block;" onclick="app.resetStats()">
+                    🔄 Xóa dữ liệu học tập
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen: Practice Settings -->
+        <div id="screen-practice-settings" class="screen glass-panel">
+            <button class="btn-back" onclick="app.navigate('screen-home')">← Quay lại</button>
+            <h2>Cấu Hình Chế Độ Ôn Tập</h2>
+            <p class="section-desc">Tùy chỉnh nội dung và phương pháp ôn luyện theo mong muốn của bạn.</p>
+            
+            <div class="settings-group">
+                <label><strong>1. Chọn Chương Muốn Ôn Tập:</strong></label>
+                <div class="checkbox-cards-group">
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="chap1" value="1" checked>
+                        <span class="card-check-inner">
+                            <span class="chap-num">Chương 1</span>
+                            <span class="chap-desc">Khái luận về triết học & Triết học Mác-Lênin</span>
+                        </span>
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="chap2" value="2" checked>
+                        <span class="card-check-inner">
+                            <span class="chap-num">Chương 2</span>
+                            <span class="chap-desc">Chủ nghĩa duy vật biện chứng (Trọng tâm)</span>
+                        </span>
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="chap3" value="3" checked>
+                        <span class="card-check-inner">
+                            <span class="chap-num">Chương 3</span>
+                            <span class="chap-desc">Chủ nghĩa duy vật lịch sử</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-two-columns">
+                <div class="settings-group">
+                    <label><strong>2. Hiển thị đáp án:</strong></label>
+                    <select id="setting-show-answer" class="glass-input">
+                        <option value="immediate">Hiện ngay sau khi click chọn</option>
+                        <option value="submit">Chỉ hiện sau khi nộp toàn bài</option>
+                    </select>
+                </div>
+
+                <div class="settings-group toggle-group-card">
+                    <label class="toggle-label">
+                        <strong>3. Xáo trộn đáp án (A, B, C, D):</strong>
+                        <span class="toggle-desc">Mỗi câu hỏi sẽ được tráo đổi ngẫu nhiên vị trí các lựa chọn nhưng vẫn bảo đảm đáp án đúng.</span>
+                        <input type="checkbox" id="setting-shuffle-options" checked>
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-full mt-4 btn-start" onclick="app.startPractice()">
+                ⚡ Bắt Đầu Ôn Tập Ngay
+            </button>
+        </div>
+
+        <!-- Screen: Exam Settings -->
+        <div id="screen-exam-settings" class="screen glass-panel">
+            <button class="btn-back" onclick="app.navigate('screen-home')">← Quay lại</button>
+            <h2>Bắt Đầu Thi Thử Nghiêm Túc</h2>
+            <p class="note-exam">Đề thi gồm 40 câu hỏi được bốc ngẫu nhiên từ hệ thống (phân bố đều ở cả 3 chương). Thang điểm 10.</p>
+            
+            <div class="settings-group">
+                <label><strong>Chọn Thời Gian Làm Bài:</strong></label>
+                <div class="radio-group time-selector">
+                    <label class="radio-card">
+                        <input type="radio" name="exam-time" value="40">
+                        <span class="radio-card-text">
+                            <span class="time">40 Phút</span>
+                            <span class="desc">1 phút / câu</span>
+                        </span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="exam-time" value="50" checked>
+                        <span class="radio-card-text">
+                            <span class="time">50 Phút</span>
+                            <span class="desc">Tốc độ vừa phải</span>
+                        </span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="exam-time" value="60">
+                        <span class="radio-card-text">
+                            <span class="time">60 Phút</span>
+                            <span class="desc">Thoải mái thời gian</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary btn-full mt-4 btn-start" onclick="app.startExam()">
+                ⏱️ Bắt Đầu Tính Giờ Làm Bài
+            </button>
+        </div>
+
+        <!-- Screen: Data Import & Management -->
+        <div id="screen-data-import" class="screen glass-panel">
+            <button class="btn-back" onclick="app.navigate('screen-home')">← Quay lại</button>
+            <h2>Cập Nhật & Quản Lý Dữ Liệu</h2>
+            <p class="section-desc">Tùy chọn tải lên tệp mới hoặc tự tay thêm, chỉnh sửa danh sách câu hỏi trắc nghiệm của hệ thống.</p>
+            
+            <!-- Tab Menu -->
+            <div class="tab-menu" style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <button id="tab-btn-auto" class="tab-btn active" onclick="app.switchImportTab('auto')">⚡ Nhập tự động (Word/Text)</button>
+                <button id="tab-btn-manual" class="tab-btn" onclick="app.switchImportTab('manual')">🛠️ Quản lý & Thêm thủ công</button>
+            </div>
+            
+            <!-- Tab 1: Auto Import -->
+            <div id="import-tab-auto" class="import-tab-content">
+                <div class="settings-group" style="text-align: center;">
+                    <label for="docx-upload" class="btn btn-secondary btn-full" style="cursor: pointer; max-width: 400px; margin: 0 auto;">
+                        <span class="icon">📂</span> Chọn file Word (.docx) câu hỏi
+                    </label>
+                    <input type="file" id="docx-upload" accept=".docx" style="display: none;" onchange="app.handleFileUpload(event)">
+                    <p class="text-small text-muted mt-2">Định dạng khuyến nghị: các dòng có dạng "Câu 1: ...", "A. ... B. ... C. ... D. ..."</p>
+                </div>
+                
+                <textarea id="import-text" class="glass-textarea" placeholder="Hoặc dán trực tiếp nội dung văn bản câu hỏi vào đây... Ví dụ:&#10;Câu 1: Triết học ra đời vào khoảng thời gian nào?&#10;A. Thế kỷ VIII - thế kỷ VI trước Công nguyên.&#10;B. Thế kỷ V trước Công nguyên.&#10;C. Thế kỷ III sau Công nguyên.&#10;D. Thế kỷ X sau Công nguyên."></textarea>
+                
+                <button class="btn btn-primary btn-full mt-4" onclick="app.importData()">⚡ Phân Tích & Cập Nhật Hệ Thống</button>
+                
+                <div id="export-section" style="display: none; margin-top: 20px; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+                    <p class="text-small" style="color: var(--success); margin-bottom: 10px; font-weight: 600;">✔ Nhận diện thành công! Tải file dữ liệu mới và chép đè vào data.js nếu bạn đang chạy mã nguồn cục bộ.</p>
+                    <button class="btn btn-primary" style="background: var(--success);" onclick="app.downloadDataFile()">⬇️ Tải xuống file data.js mới</button>
+                    <textarea id="export-text" class="glass-textarea mt-2" style="height: 120px; font-family: monospace; font-size: 0.85rem;"></textarea>
+                </div>
+                
+                <p id="import-status" class="mt-2 text-center" style="font-weight: 600;"></p>
+            </div>
+
+            <!-- Tab 2: Manual Manager -->
+            <div id="import-tab-manual" class="import-tab-content" style="display: none;">
+                <div class="manager-controls" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; gap: 12px; flex: 1; min-width: 280px;">
+                        <input type="text" id="manager-search" class="glass-input" placeholder="🔍 Tìm kiếm theo nội dung hoặc mã câu hỏi..." oninput="app.renderQuestionManagerList()">
+                        <select id="manager-filter-chap" class="glass-input" style="max-width: 150px;" onchange="app.renderQuestionManagerList()">
+                            <option value="all">Tất cả chương</option>
+                            <option value="1">Chương 1</option>
+                            <option value="2">Chương 2</option>
+                            <option value="3">Chương 3</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="width: auto; padding: 12px 20px;" onclick="app.openAddQuestionModal()">➕ Thêm câu hỏi mới</button>
+                </div>
+
+                <div class="manager-q-list" id="manager-q-list" style="display: flex; flex-direction: column; gap: 16px; max-height: 500px; overflow-y: auto; padding-right: 8px; margin-top: 15px;">
+                    <!-- Dữ liệu câu hỏi được render qua script.js -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen: Quiz Interface (Redesigned Split Layout) -->
+        <div id="screen-quiz" class="screen screen-quiz-layout">
+            
+            <!-- Left Panel: Main Question View -->
+            <div class="quiz-main-panel glass-panel">
+                <button class="btn-back" onclick="app.confirmExitQuiz()">← Quay lại</button>
+                <div class="quiz-main-header">
+                    <div class="header-left">
+                        <span id="quiz-progress" class="progress-text">Câu 1/40</span>
+                        <span id="question-chapter-badge" class="chapter-badge">Chương 1</span>
+                    </div>
+                    <button id="btn-flag" class="btn-flag-toggle" onclick="app.toggleFlagQuestion()">
+                        <span class="flag-icon">🏳️</span> <span class="flag-text">Đánh dấu câu này</span>
+                    </button>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+
+                <div class="question-wrapper">
+                    <div class="question-title-row">
+                        <span id="question-id-lbl" class="q-number-label">Câu 1</span>
+                        <h3 id="question-text" class="question-text">Đang tải câu hỏi...</h3>
+                    </div>
+                    
+                    <div id="options-container" class="options-container">
+                        <!-- Options injected via JS -->
+                    </div>
+                </div>
+
+                <div class="quiz-footer">
+                    <button class="btn btn-outline" id="btn-prev" onclick="app.prevQuestion()">
+                        ← Câu Trước
+                    </button>
+                    <button class="btn btn-primary" id="btn-next" onclick="app.nextQuestion()">
+                        Câu Tiếp →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Grid Question Navigator & Stats -->
+            <div class="quiz-sidebar-panel glass-panel">
+                <div class="sidebar-timer-box" id="sidebar-timer-container" style="display: none;">
+                    <div class="timer-title">⏱️ THỜI GIAN CÒN LẠI</div>
+                    <div id="quiz-timer" class="timer-text">--:--</div>
+                </div>
+
+                <div class="sidebar-mode-indicator">
+                    <span id="sidebar-mode-badge" class="mode-badge">Đang Ôn Tập</span>
+                </div>
+
+                <div class="sidebar-stats">
+                    <div class="stat-box-mini">
+                        <span class="stat-count count-done" id="stat-done">0</span>
+                        <span class="stat-lbl">Đã làm</span>
+                    </div>
+                    <div class="stat-box-mini">
+                        <span class="stat-count count-flagged" id="stat-flagged">0</span>
+                        <span class="stat-lbl">Đánh dấu</span>
+                    </div>
+                    <div class="stat-box-mini">
+                        <span class="stat-count count-total" id="stat-total">0</span>
+                        <span class="stat-lbl">Tổng số</span>
+                    </div>
+                </div>
+
+                <!-- Filters for Question Grid -->
+                <div class="sidebar-filters">
+                    <span class="filter-lbl">Xem theo bộ lọc:</span>
+                    <div class="filter-chips">
+                        <button id="chip-filter-all" class="chip active" onclick="app.setGridFilter('all')">Tất cả</button>
+                        <button id="chip-filter-done" class="chip" onclick="app.setGridFilter('done')">Đã làm</button>
+                        <button id="chip-filter-undone" class="chip" onclick="app.setGridFilter('undone')">Chưa làm</button>
+                        <button id="chip-filter-flagged" class="chip" onclick="app.setGridFilter('flagged')">Đánh dấu</button>
+                    </div>
+                </div>
+
+                <!-- Question Grid Navigation -->
+                <div class="question-grid-wrapper">
+                    <div class="grid-title">BẢNG CÂU HỎI</div>
+                    <div id="question-grid" class="question-grid">
+                        <!-- Questions 1, 2, 3... injected here -->
+                    </div>
+                </div>
+
+                <div class="sidebar-submit-btn-container">
+                    <button class="btn btn-secondary btn-full btn-submit-exam" onclick="app.submitQuiz()">
+                        📤 Nộp Bài & Xem Kết Quả
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen: Results & Detail Review -->
+        <div id="screen-results" class="screen glass-panel">
+            <h2 class="text-center">Kết Quả Học Tập</h2>
+            <p id="result-student-name" class="text-center mt-1" style="font-weight: 700; color: var(--primary); font-size: 1.15rem; display: none;"></p>
+            
+            <div class="results-summary">
+                <div class="score-display-radial">
+                    <span id="score-text" class="score-num">8.50</span>
+                    <span class="score-max">/10 điểm</span>
+                </div>
+                
+                <div class="stats-detailed-row">
+                    <div class="stat-card res-correct-card">
+                        <div class="num" id="res-correct">0</div>
+                        <div class="label">Đúng</div>
+                    </div>
+                    <div class="stat-card res-wrong-card">
+                        <div class="num" id="res-wrong">0</div>
+                        <div class="label">Sai</div>
+                    </div>
+                    <div class="stat-card res-unanswered-card">
+                        <div class="num" id="res-unanswered">0</div>
+                        <div class="label">Chưa làm</div>
+                    </div>
+                </div>
+
+                <p id="result-detail" class="result-text mt-3">Bạn đã trả lời đúng 34/40 câu.</p>
+                <p id="result-time" class="result-time-text">Thời gian thực hiện: 12 phút 15 giây</p>
+            </div>
+            
+            <div class="action-buttons-row mt-4">
+                <button class="btn btn-primary" onclick="app.reviewAnswers()">
+                    <span class="icon">🔍</span> Xem Lại Từng Câu
+                </button>
+                <button class="btn btn-outline" onclick="app.navigate('screen-home')">
+                    <span class="icon">🏠</span> Về Trang Chủ
+                </button>
+            </div>
+
+            <!-- List of Answered/Done Questions (Requested Feature) -->
+            <div class="results-review-section mt-5">
+                <div class="section-header-row">
+                    <h3>Chi Tiết Bảng Trả Lời</h3>
+                    <div class="legend-row">
+                        <span class="legend-item"><span class="color-dot dot-correct"></span> Đúng</span>
+                        <span class="legend-item"><span class="color-dot dot-wrong"></span> Sai</span>
+                        <span class="legend-item"><span class="color-dot dot-unanswered"></span> Bỏ qua</span>
+                    </div>
+                </div>
+                <p class="text-small text-muted mb-3">Dưới đây là danh sách toàn bộ các câu hỏi. Nhấn vào câu bất kỳ để xem chi tiết.</p>
+                
+                <div id="results-review-list" class="results-review-list">
+                    <!-- Dynamic items containing Question Number, Question Text, User's Choice, Correct Choice and Status badge. -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal: Add/Edit Question -->
+    <div id="modal-question" class="modal-overlay" style="display: none;">
+        <div class="modal-content glass-panel">
+            <h3 id="modal-q-title" style="margin-bottom: 20px; font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800;">Thêm Câu Hỏi Mới</h3>
+            <input type="hidden" id="modal-q-mode" value="add"> <!-- 'add' or 'edit' -->
+            <input type="hidden" id="modal-q-original-id" value="">
+            
+            <div class="modal-grid">
+                <div class="modal-group">
+                    <label for="form-q-id" style="display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">Mã câu hỏi (ID):</label>
+                    <input type="text" id="form-q-id" class="glass-input" placeholder="Ví dụ: 291">
+                </div>
+                <div class="modal-group">
+                    <label for="form-q-chap" style="display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">Chương:</label>
+                    <select id="form-q-chap" class="glass-input">
+                        <option value="1">Chương 1</option>
+                        <option value="2">Chương 2</option>
+                        <option value="3">Chương 3</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-group mt-3" style="margin-top: 15px;">
+                <label for="form-q-text" style="display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">Nội dung câu hỏi:</label>
+                <textarea id="form-q-text" class="glass-textarea" placeholder="Nhập nội dung câu hỏi trắc nghiệm..." style="height: 80px; width: 100%; border-radius: 12px;"></textarea>
+            </div>
+
+            <div class="modal-options-grid mt-3" style="margin-top: 15px;">
+                <div class="modal-group">
+                    <label for="form-q-optA" style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Lựa chọn A:</label>
+                    <input type="text" id="form-q-optA" class="glass-input" placeholder="Nhập đáp án A...">
+                </div>
+                <div class="modal-group">
+                    <label for="form-q-optB" style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Lựa chọn B:</label>
+                    <input type="text" id="form-q-optB" class="glass-input" placeholder="Nhập đáp án B...">
+                </div>
+                <div class="modal-group" style="margin-top: 10px;">
+                    <label for="form-q-optC" style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Lựa chọn C:</label>
+                    <input type="text" id="form-q-optC" class="glass-input" placeholder="Nhập đáp án C...">
+                </div>
+                <div class="modal-group" style="margin-top: 10px;">
+                    <label for="form-q-optD" style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Lựa chọn D:</label>
+                    <input type="text" id="form-q-optD" class="glass-input" placeholder="Nhập đáp án D...">
+                </div>
+            </div>
+
+            <div class="modal-group mt-3" style="margin-top: 15px;">
+                <label for="form-q-correct" style="display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">Đáp án chính xác:</label>
+                <select id="form-q-correct" class="glass-input">
+                    <option value="A">Lựa chọn A</option>
+                    <option value="B">Lựa chọn B</option>
+                    <option value="C">Lựa chọn C</option>
+                    <option value="D">Lựa chọn D</option>
+                </select>
+            </div>
+
+            <div class="modal-actions mt-4" style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+                <button class="btn btn-outline" style="width: auto; padding: 10px 20px;" onclick="app.closeQuestionModal()">Hủy</button>
+                <button class="btn btn-primary" style="width: auto; padding: 10px 20px;" onclick="app.saveQuestionManual()">Lưu Thay Đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

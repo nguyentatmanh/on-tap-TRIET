@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <div id="out"></div>
+    <script>
+        window.onerror = function(msg, url, line) {
+            document.getElementById('out').innerText += "ERROR: " + msg + " at line " + line + "\n";
+        };
+    </script>
+    <script src="data.js"></script>
+    <script>
+        try {
+            document.getElementById('out').innerText += "Success. defaultQuestions length: " + defaultQuestions.length + "\n";
+            document.getElementById('out').innerText += "Q3 text: " + defaultQuestions[2].text + "\n";
+            document.getElementById('out').innerText += "Q3 options: " + JSON.stringify(defaultQuestions[2].options) + "\n";
+        } catch (e) {
+            document.getElementById('out').innerText += "CATCH: " + e.message + "\n";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Ôn Thi Trắc Nghiệm Triết Học - Đăng Nhập</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-logo">
+            <span class="logo-icon">🧠</span>
+            <div class="logo-text">
+                <span class="logo-main">Triết Học Mác - Lênin</span>
+                <span class="logo-sub">Ôn tập & Thi Thử Trực Tuyến</span>
+            </div>
+        </div>
+        <button id="btn-theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()">
+            <span class="theme-icon">🌙</span> <span class="theme-text">Giao diện tối</span>
+        </button>
+    </header>
+
+    <div class="app-container">
+        <!-- Screen: Welcome / Enter Name -->
+        <div id="screen-welcome" class="screen active glass-panel text-center welcome-container">
+            <div class="welcome-icon">🎓</div>
+            <h1 class="title-gradient">Triết Học Mác - Lênin</h1>
+            <p class="subtitle">Chào mừng bạn đến với hệ thống ôn thi trắc nghiệm.</p>
+            
+            <div class="name-input-group">
+                <label for="student-name">Họ và tên của bạn:</label>
+                <input type="text" id="student-name" class="glass-input text-center mt-1" placeholder="Nhập họ và tên của bạn..." autocomplete="off">
+            </div>
+            
+            <button class="btn btn-primary btn-large" id="btn-welcome-continue" onclick="saveNameAndContinue()">
+                Tiếp Tục Học Tập →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Simple theme controls for index.html
+        function applyTheme() {
+            const savedTheme = localStorage.getItem('appTheme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeToggleUI(savedTheme);
+        }
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('appTheme', newTheme);
+            updateThemeToggleUI(newTheme);
+        }
+        function updateThemeToggleUI(theme) {
+            const btn = document.getElementById('btn-theme-toggle');
+            if (!btn) return;
+            const icon = btn.querySelector('.theme-icon');
+            const text = btn.querySelector('.theme-text');
+            if (theme === 'dark') {
+                icon.innerText = '🌙';
+                text.innerText = 'Giao diện tối';
+            } else {
+                icon.innerText = '☀️';
+                text.innerText = 'Giao diện sáng';
+            }
+        }
+
+        // Redirect check
+        const urlParams = new URLSearchParams(window.location.search);
+        const savedName = localStorage.getItem('studentName');
+        if (savedName && !urlParams.has('change')) {
+            window.location.href = 'quiz.html';
+        } else if (savedName) {
+            document.getElementById('student-name').value = savedName;
+        }
+
+        function saveNameAndContinue() {
+            const nameInput = document.getElementById('student-name');
+            const name = nameInput.value.trim();
+            if (!name) {
+                alert("Vui lòng nhập họ và tên của bạn để tiếp tục!");
+                nameInput.focus();
+                return;
+            }
+            localStorage.setItem('studentName', name);
+            window.location.href = 'quiz.html';
+        }
+
+        // Enter key support
+        document.getElementById('student-name').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveNameAndContinue();
+            }
+        });
+
+        applyTheme();
+    </script>
+</body>
+</html>
