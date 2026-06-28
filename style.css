@@ -1801,3 +1801,109 @@ h2 {
 .donation-qr-img:hover + span {
     color: var(--primary) !important;
 }
+
+/* History Modal Items */
+.history-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s ease;
+}
+
+[data-theme="light"] .history-item {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.history-item:hover {
+    background: var(--option-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+}
+
+.history-item-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.history-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.history-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.history-badge.exam {
+    background: var(--secondary-light);
+    color: var(--secondary);
+}
+
+.history-badge.practice {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.history-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.history-duration {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.history-item-right {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+}
+
+.history-score {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--success);
+}
+
+.history-item.fail .history-score {
+    color: var(--danger);
+}
+
+.history-accuracy {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.history-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.history-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+}
+

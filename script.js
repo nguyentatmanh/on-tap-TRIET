@@ -649,7 +649,7 @@ const app = {
         }
 
         // Lưu thống kê lịch sử
-        this.saveHistoryStats(score);
+        this.saveHistoryStats(score, correctCount, timeString);
 
         if (this.mode === 'practice') {
             localStorage.removeItem('practiceProgress');
@@ -725,7 +725,7 @@ const app = {
         document.getElementById('sidebar-mode-badge').innerText = 'Xem Lại Đáp Án';
     },
 
-    saveHistoryStats: function(score) {
+    saveHistoryStats: function(score, correctCount, timeString) {
         let stats = localStorage.getItem('studyHistoryStats');
         if (!stats) {
             stats = { practicesCount: 0, examsCount: 0, examScores: [] };
@@ -746,6 +746,30 @@ const app = {
         }
         
         localStorage.setItem('studyHistoryStats', JSON.stringify(stats));
+
+        // Lưu lịch sử chi tiết
+        let historyList = localStorage.getItem('studyHistoryList');
+        if (!historyList) {
+            historyList = [];
+        } else {
+            try {
+                historyList = JSON.parse(historyList);
+            } catch (e) {
+                historyList = [];
+            }
+        }
+
+        const newRecord = {
+            type: this.mode,
+            timestamp: new Date().toLocaleString('vi-VN'),
+            score: this.mode === 'exam' ? score : null,
+            correct: correctCount,
+            total: this.activeQuestions.length,
+            timeSpent: timeString
+        };
+
+        historyList.unshift(newRecord); // Đưa bản ghi mới lên đầu
+        localStorage.setItem('studyHistoryList', JSON.stringify(historyList));
     },
 
     updateHomeStats: function() {
@@ -772,11 +796,85 @@ const app = {
     },
 
     resetStats: function() {
-        if (confirm("Bạn có chắc chắn muốn xóa tất cả thống kê tiến trình học tập không?")) {
+        if (confirm("Bạn có chắc chắn muốn xóa tất cả thống kê tiến trình học tập và lịch sử làm bài không?")) {
             localStorage.removeItem('studyHistoryStats');
             localStorage.removeItem('practiceProgress');
+            localStorage.removeItem('studyHistoryList');
             this.updateHomeStats();
             alert("Đã xóa dữ liệu thành công!");
+        }
+    },
+
+    showHistoryModal: function() {
+        const modal = document.getElementById('modal-history');
+        const listContainer = document.getElementById('history-modal-list');
+        if (!modal || !listContainer) return;
+
+        listContainer.innerHTML = '';
+        
+        let historyList = localStorage.getItem('studyHistoryList');
+        if (historyList) {
+            try {
+                historyList = JSON.parse(historyList);
+            } catch (e) {
+                historyList = [];
+            }
+        } else {
+            historyList = [];
+        }
+
+        if (historyList.length === 0) {
+            listContainer.innerHTML = `
+                <div class="history-empty-state">
+                    <div class="history-empty-icon">📂</div>
+                    <p>Bạn chưa thực hiện lượt ôn tập hay thi thử nào.</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">Các kết quả thi sẽ hiển thị tại đây sau khi bạn nộp bài.</p>
+                </div>
+            `;
+        } else {
+            historyList.forEach(item => {
+                const card = document.createElement('div');
+                const isExam = item.type === 'exam';
+                const badgeClass = isExam ? 'exam' : 'practice';
+                const badgeText = isExam ? 'Thi Thử' : 'Ôn Tập';
+                
+                let scoreHtml = '';
+                let itemClass = '';
+                if (isExam) {
+                    const scoreNum = parseFloat(item.score);
+                    scoreHtml = `<div class="history-score">${scoreNum.toFixed(2)}</div>`;
+                    if (scoreNum < 4.0) {
+                        itemClass = 'fail';
+                    }
+                } else {
+                    scoreHtml = `<div class="history-score" style="color: var(--primary);">--</div>`;
+                }
+
+                card.className = `history-item ${itemClass}`;
+                card.innerHTML = `
+                    <div class="history-item-left">
+                        <div class="history-item-meta">
+                            <span class="history-badge ${badgeClass}">${badgeText}</span>
+                            <span class="history-date">${item.timestamp}</span>
+                        </div>
+                        <span class="history-duration">⏱️ ${item.timeSpent}</span>
+                    </div>
+                    <div class="history-item-right">
+                        ${scoreHtml}
+                        <span class="history-accuracy">Đúng ${item.correct}/${item.total}</span>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        modal.style.display = 'flex';
+    },
+
+    closeHistoryModal: function() {
+        const modal = document.getElementById('modal-history');
+        if (modal) {
+            modal.style.display = 'none';
         }
     },
 
