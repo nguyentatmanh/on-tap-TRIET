@@ -660,9 +660,13 @@ h2 {
 
 /* Time selector cards */
 .time-selector {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    justify-content: center;
     gap: 16px;
+}
+.time-selector .radio-card {
+    width: 100%;
+    max-width: 240px;
 }
 
 .radio-card {

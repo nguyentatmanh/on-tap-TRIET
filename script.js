@@ -346,6 +346,16 @@ const app = {
         // Ghi tiêu đề câu hỏi và chương
         document.getElementById('question-chapter-badge').innerText = `Chương ${q.chapter}`;
         document.getElementById('question-id-lbl').innerText = `Câu ${q.id}`;
+        
+        // Ẩn mã câu hỏi và chương trong chế độ thi thử (trừ khi đang xem lại kết quả)
+        if (this.mode === 'exam' && !this.isReviewing) {
+            document.getElementById('question-chapter-badge').style.display = 'none';
+            document.getElementById('question-id-lbl').style.display = 'none';
+        } else {
+            document.getElementById('question-chapter-badge').style.display = 'inline-block';
+            document.getElementById('question-id-lbl').style.display = 'inline-block';
+        }
+
         document.getElementById('question-text').innerText = q.text.replace(/\[CHƯA CÓ NỘI DUNG\].*$/, '');
 
         // Quản lý nút Đánh dấu (Flag)
