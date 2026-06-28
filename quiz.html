@@ -150,9 +150,33 @@
                 </div>
             </div>
 
+            <!-- Custom Question Range Section -->
+            <div class="settings-group" style="margin-top: 20px;">
+                <label><strong>2. Phạm Vi Câu Hỏi Ôn Tập:</strong></label>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-primary); font-weight: 600; font-size: 0.95rem;">
+                        <input type="radio" name="practice-range-mode" value="all" checked onchange="app.togglePracticeRangeInputs()"> Tất cả câu hỏi
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-primary); font-weight: 600; font-size: 0.95rem;">
+                        <input type="radio" name="practice-range-mode" value="custom" onchange="app.togglePracticeRangeInputs()"> Chọn khoảng câu hỏi cụ thể
+                    </label>
+                </div>
+                <div id="practice-custom-range-inputs" style="display: none; align-items: center; gap: 14px; margin-top: 15px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;">Từ câu:</span>
+                        <input type="number" id="practice-range-from" class="glass-input" style="width: 100px; padding: 10px 14px; font-weight: 600;" value="1" min="1">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;">Đến câu:</span>
+                        <input type="number" id="practice-range-to" class="glass-input" style="width: 100px; padding: 10px 14px; font-weight: 600;" value="290" min="1">
+                    </div>
+                    <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin-left: 8px;" id="practice-range-info">(Tổng số: -- câu)</span>
+                </div>
+            </div>
+
             <div class="settings-two-columns">
                 <div class="settings-group">
-                    <label><strong>2. Hiển thị đáp án:</strong></label>
+                    <label><strong>3. Hiển thị đáp án:</strong></label>
                     <select id="setting-show-answer" class="glass-input">
                         <option value="immediate">Hiện ngay sau khi click chọn</option>
                         <option value="submit">Chỉ hiện sau khi nộp toàn bài</option>
@@ -161,7 +185,7 @@
 
                 <div class="settings-group toggle-group-card">
                     <label class="toggle-label">
-                        <strong>3. Xáo trộn đáp án (A, B, C, D):</strong>
+                        <strong>4. Xáo trộn đáp án (A, B, C, D):</strong>
                         <span class="toggle-desc">Mỗi câu hỏi sẽ được tráo đổi ngẫu nhiên vị trí các lựa chọn nhưng vẫn bảo đảm đáp án đúng.</span>
                         <input type="checkbox" id="setting-shuffle-options" checked>
                     </label>

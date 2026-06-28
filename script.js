@@ -164,6 +164,8 @@ const app = {
                     ? `Chào mừng ${this.studentName} đến với giải pháp ôn thi trắc nghiệm tối ưu!`
                     : "Giải pháp ôn thi trắc nghiệm tối ưu dành cho sinh viên";
             }
+        } else if (screenId === 'screen-practice-settings') {
+            this.initPracticeSettings();
         } else if (screenId === 'screen-data-import') {
             this.renderQuestionManagerList();
         }
@@ -192,6 +194,35 @@ const app = {
         document.querySelector('.sidebar-submit-btn-container').style.display = 'block';
     },
 
+    initPracticeSettings: function() {
+        const totalQs = defaultQuestions.length;
+        const toInput = document.getElementById('practice-range-to');
+        const fromInput = document.getElementById('practice-range-from');
+        const infoSpan = document.getElementById('practice-range-info');
+        
+        if (toInput && fromInput && infoSpan) {
+            fromInput.value = 1;
+            toInput.value = totalQs;
+            toInput.max = totalQs;
+            infoSpan.innerText = `(Tổng số: ${totalQs} câu)`;
+        }
+        
+        // Reset radio buttons to 'all'
+        const radioAll = document.querySelector('input[name="practice-range-mode"][value="all"]');
+        if (radioAll) {
+            radioAll.checked = true;
+            this.togglePracticeRangeInputs();
+        }
+    },
+    
+    togglePracticeRangeInputs: function() {
+        const customRadio = document.querySelector('input[name="practice-range-mode"][value="custom"]');
+        const container = document.getElementById('practice-custom-range-inputs');
+        if (container && customRadio) {
+            container.style.display = customRadio.checked ? 'flex' : 'none';
+        }
+    },
+
     startPractice: function() {
         initAudio();
 
@@ -207,6 +238,29 @@ const app = {
         if (pool.length === 0) {
             alert("Vui lòng chọn ít nhất 1 chương!");
             return;
+        }
+
+        // Lọc theo khoảng câu hỏi nếu chọn chế độ custom
+        const rangeMode = document.querySelector('input[name="practice-range-mode"]:checked').value;
+        if (rangeMode === 'custom') {
+            const fromVal = parseInt(document.getElementById('practice-range-from').value) || 1;
+            const toVal = parseInt(document.getElementById('practice-range-to').value) || defaultQuestions.length;
+            
+            if (fromVal > toVal) {
+                alert("Số câu bắt đầu không được lớn hơn số câu kết thúc!");
+                return;
+            }
+            
+            // Lọc các câu hỏi có ID số học nằm trong khoảng chọn
+            pool = pool.filter(q => {
+                const idNum = parseInt(q.id) || 0;
+                return idNum >= fromVal && idNum <= toVal;
+            });
+            
+            if (pool.length === 0) {
+                alert(`Không tìm thấy câu hỏi nào thuộc khoảng từ câu ${fromVal} đến câu ${toVal} của các chương đã chọn!`);
+                return;
+            }
         }
 
         this.settings.showAnswerImmediate = document.getElementById('setting-show-answer').value === 'immediate';
