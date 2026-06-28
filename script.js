@@ -854,6 +854,13 @@ const app = {
         listContainer.appendChild(footerText);
     },
 
+    resetToDefaultQuestions: function() {
+        if (confirm("Bạn có chắc chắn muốn khôi phục toàn bộ câu hỏi về mặc định của hệ thống? Mọi câu hỏi tự thêm hoặc chỉnh sửa của bạn sẽ bị xóa.")) {
+            localStorage.removeItem('savedQuestions');
+            window.location.reload();
+        }
+    },
+
     openAddQuestionModal: function() {
         document.getElementById('modal-q-title').innerText = "Thêm Câu Hỏi Mới";
         document.getElementById('modal-q-mode').value = "add";

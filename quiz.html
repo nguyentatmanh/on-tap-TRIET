@@ -224,7 +224,10 @@
                             <option value="3">Chương 3</option>
                         </select>
                     </div>
-                    <button class="btn btn-primary" style="width: auto; padding: 12px 20px;" onclick="app.openAddQuestionModal()">➕ Thêm câu hỏi mới</button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" style="width: auto; padding: 12px 20px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; font-weight: 600;" onclick="app.resetToDefaultQuestions()">🔄 Khôi phục dữ liệu gốc</button>
+                        <button class="btn btn-primary" style="width: auto; padding: 12px 20px;" onclick="app.openAddQuestionModal()">➕ Thêm câu hỏi mới</button>
+                    </div>
                 </div>
 
                 <div class="manager-q-list" id="manager-q-list" style="display: flex; flex-direction: column; gap: 16px; max-height: 500px; overflow-y: auto; padding-right: 8px; margin-top: 15px;">
