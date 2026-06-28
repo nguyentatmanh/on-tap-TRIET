@@ -142,10 +142,10 @@ const app = {
         
         if (theme === 'dark') {
             icon.innerText = '🌙';
-            text.innerText = 'Giao diện tối';
+            text.innerText = 'Tối (Dịu mắt)';
         } else {
             icon.innerText = '☀️';
-            text.innerText = 'Giao diện sáng';
+            text.innerText = 'Sáng (Giấy ấm)';
         }
     },
 
