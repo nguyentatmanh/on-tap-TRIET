@@ -649,7 +649,7 @@ const app = {
         }
 
         // Lưu thống kê lịch sử
-        this.saveHistoryStats(score, correctCount, timeString);
+        this.saveHistoryStats(score, correctCount, wrongCount, unansweredCount, timeString);
 
         if (this.mode === 'practice') {
             localStorage.removeItem('practiceProgress');
@@ -725,7 +725,7 @@ const app = {
         document.getElementById('sidebar-mode-badge').innerText = 'Xem Lại Đáp Án';
     },
 
-    saveHistoryStats: function(score, correctCount, timeString) {
+    saveHistoryStats: function(score, correctCount, wrongCount, unansweredCount, timeString) {
         let stats = localStorage.getItem('studyHistoryStats');
         if (!stats) {
             stats = { practicesCount: 0, examsCount: 0, examScores: [] };
@@ -764,11 +764,19 @@ const app = {
             timestamp: new Date().toLocaleString('vi-VN'),
             score: this.mode === 'exam' ? score : null,
             correct: correctCount,
+            wrong: wrongCount,
+            unanswered: unansweredCount,
             total: this.activeQuestions.length,
-            timeSpent: timeString
+            timeSpent: timeString,
+            userAnswers: JSON.parse(JSON.stringify(this.userAnswers)),
+            activeQuestions: JSON.parse(JSON.stringify(this.activeQuestions)),
+            studentName: this.studentName
         };
 
         historyList.unshift(newRecord); // Đưa bản ghi mới lên đầu
+        if (historyList.length > 30) {
+            historyList = historyList.slice(0, 30);
+        }
         localStorage.setItem('studyHistoryList', JSON.stringify(historyList));
     },
 
@@ -832,7 +840,7 @@ const app = {
                 </div>
             `;
         } else {
-            historyList.forEach(item => {
+            historyList.forEach((item, idx) => {
                 const card = document.createElement('div');
                 const isExam = item.type === 'exam';
                 const badgeClass = isExam ? 'exam' : 'practice';
@@ -851,6 +859,9 @@ const app = {
                 }
 
                 card.className = `history-item ${itemClass}`;
+                card.style.cursor = 'pointer';
+                card.setAttribute('title', 'Nhấn vào để xem chi tiết bài làm này');
+                card.onclick = () => this.viewHistoryRecord(idx);
                 card.innerHTML = `
                     <div class="history-item-left">
                         <div class="history-item-meta">
@@ -876,6 +887,60 @@ const app = {
         if (modal) {
             modal.style.display = 'none';
         }
+    },
+
+    viewHistoryRecord: function(index) {
+        let historyList = localStorage.getItem('studyHistoryList');
+        if (!historyList) return;
+        try {
+            historyList = JSON.parse(historyList);
+        } catch (e) {
+            return;
+        }
+
+        const record = historyList[index];
+        if (!record) return;
+
+        // Kiểm tra xem bản ghi có chứa dữ liệu chi tiết câu hỏi không
+        if (!record.activeQuestions || record.activeQuestions.length === 0) {
+            alert("Rất tiếc! Bản ghi lịch sử cũ này không lưu chi tiết câu hỏi (chỉ các bài làm mới từ bây giờ mới có thể xem lại chi tiết).");
+            return;
+        }
+
+        // Đóng modal lịch sử
+        this.closeHistoryModal();
+
+        // Nạp trạng thái bài làm từ lịch sử vào app
+        this.activeQuestions = record.activeQuestions;
+        this.userAnswers = record.userAnswers || {};
+        this.mode = record.type;
+        this.studentName = record.studentName || '';
+        this.isReviewing = true;
+
+        // Tính toán/điền dữ liệu màn hình kết quả
+        const scoreVal = record.score !== null ? parseFloat(record.score) : ((record.correct / record.total) * 10);
+        document.getElementById('score-text').innerText = scoreVal.toFixed(2);
+        document.getElementById('res-correct').innerText = record.correct;
+        document.getElementById('res-wrong').innerText = record.wrong !== undefined ? record.wrong : (record.total - record.correct);
+        document.getElementById('res-unanswered').innerText = record.unanswered !== undefined ? record.unanswered : 0;
+        document.getElementById('result-detail').innerText = `Bài làm lúc: ${record.timestamp}\nTỷ lệ đúng: ${record.correct}/${record.total} câu (${Math.round((record.correct / record.total) * 100)}%)`;
+        document.getElementById('result-time').innerText = `Thời gian thực hiện: ${record.timeSpent}`;
+
+        const nameLabel = document.getElementById('result-student-name');
+        if (nameLabel) {
+            if (this.studentName) {
+                nameLabel.innerText = `Thí sinh: ${this.studentName}`;
+                nameLabel.style.display = 'block';
+            } else {
+                nameLabel.style.display = 'none';
+            }
+        }
+
+        // Tạo danh sách câu hỏi đã làm trực quan
+        this.renderResultsReviewList();
+
+        // Chuyển sang màn hình kết quả để xem lại
+        this.navigate('screen-results');
     },
 
 
