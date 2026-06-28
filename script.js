@@ -223,6 +223,61 @@ const app = {
         }
     },
 
+    shuffleQuestionOptions: function(q, shuffleEnabled) {
+        let keys = ['A', 'B', 'C', 'D'];
+        
+        if (shuffleEnabled) {
+            // 1. Kiểm tra tham chiếu chữ cái (ví dụ: "A và B", "phương án C hoặc D")
+            let hasLetterReference = false;
+            const letterRefRegex = /\b[A-D]\s*(và|hoặc|,)\s*[A-D]\b/i;
+            
+            keys.forEach(k => {
+                if (letterRefRegex.test(q.options[k] || "")) {
+                    hasLetterReference = true;
+                }
+            });
+            
+            if (!hasLetterReference) {
+                // 2. Phân loại đáp án đặc biệt (Tất cả ý trên, Cả 3 đáp án...)
+                const specialKeywords = [
+                    "tất cả", "đều đúng", "đều sai", 
+                    "cả 3", "cả ba", "không có", "tất cả các", "các ý trên", "các phương án trên"
+                ];
+                
+                let normalKeys = [];
+                let specialKeys = [];
+                
+                keys.forEach(k => {
+                    const text = (q.options[k] || "").toLowerCase().trim();
+                    const isSpecial = specialKeywords.some(keyword => text.includes(keyword));
+                    if (isSpecial) {
+                        specialKeys.push(k);
+                    } else {
+                        normalKeys.push(k);
+                    }
+                });
+                
+                // 3. Trộn ngẫu nhiên đáp án thường (Fisher-Yates chuẩn)
+                for (let i = normalKeys.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [normalKeys[i], normalKeys[j]] = [normalKeys[j], normalKeys[i]];
+                }
+                
+                // 4. Trộn ngẫu nhiên đáp án đặc biệt (nếu có từ 2 trở lên)
+                for (let i = specialKeys.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [specialKeys[i], specialKeys[j]] = [specialKeys[j], specialKeys[i]];
+                }
+                
+                // Ghép lại: Thường lên trước, đặc biệt xếp dưới cùng
+                keys = [...normalKeys, ...specialKeys];
+            }
+        }
+        
+        q.sessionOptionsOrder = keys;
+        return keys;
+    },
+
     startPractice: function() {
         initAudio();
 
@@ -276,11 +331,7 @@ const app = {
 
         // Tráo đáp án cố định cho phiên học này
         this.activeQuestions.forEach(q => {
-            let keys = ['A', 'B', 'C', 'D'];
-            if (this.settings.shuffleOptions) {
-                keys.sort(() => Math.random() - 0.5);
-            }
-            q.sessionOptionsOrder = keys;
+            this.shuffleQuestionOptions(q, this.settings.shuffleOptions);
         });
         
         // Phục hồi tiến độ nếu có
@@ -339,9 +390,7 @@ const app = {
 
         // Tráo đáp án cố định cho phiên thi này
         this.activeQuestions.forEach(q => {
-            let keys = ['A', 'B', 'C', 'D'];
-            keys.sort(() => Math.random() - 0.5);
-            q.sessionOptionsOrder = keys;
+            this.shuffleQuestionOptions(q, this.settings.shuffleOptions);
         });
 
         this.timeRemaining = totalMinutes * 60;
@@ -438,56 +487,7 @@ const app = {
         // Đọc thứ tự đáp án cố định của câu này trong phiên này
         let keys = q.sessionOptionsOrder;
         if (!keys) {
-            keys = ['A', 'B', 'C', 'D'];
-            if (this.settings.shuffleOptions) {
-                // Kiểm tra xem câu hỏi có chứa đáp án chỉ định cụ thể chữ cái không (ví dụ: "A và B", "đáp án B hoặc C")
-                // Nếu có, KHÔNG trộn đáp án để tránh sai lệch tham chiếu chữ cái hiển thị.
-                let hasLetterReference = false;
-                const letterRefRegex = /\b[A-D]\s*(và|hoặc|,)\s*[A-D]\b/i;
-                
-                keys.forEach(k => {
-                    if (letterRefRegex.test(q.options[k] || "")) {
-                        hasLetterReference = true;
-                    }
-                });
-                
-                if (!hasLetterReference) {
-                    // Phân loại đáp án đặc biệt (chứa các từ như "tất cả", "đều đúng", "đều sai", "cả 3", "không có", v.v.)
-                    const specialKeywords = [
-                        "tất cả", "đều đúng", "đều sai", 
-                        "cả 3", "cả ba", "không có", "tất cả các", "các ý trên", "các phương án trên"
-                    ];
-                    
-                    let normalKeys = [];
-                    let specialKeys = [];
-                    
-                    keys.forEach(k => {
-                        const text = (q.options[k] || "").toLowerCase().trim();
-                        const isSpecial = specialKeywords.some(keyword => text.includes(keyword));
-                        if (isSpecial) {
-                            specialKeys.push(k);
-                        } else {
-                            normalKeys.push(k);
-                        }
-                    });
-                    
-                    // Trộn ngẫu nhiên các câu hỏi bình thường bằng thuật toán Fisher-Yates chuẩn hóa
-                    for (let i = normalKeys.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [normalKeys[i], normalKeys[j]] = [normalKeys[j], normalKeys[i]];
-                    }
-                    
-                    // Trộn ngẫu nhiên các câu hỏi đặc biệt nếu có nhiều hơn 1
-                    for (let i = specialKeys.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [specialKeys[i], specialKeys[j]] = [specialKeys[j], specialKeys[i]];
-                    }
-                    
-                    // Ghép lại: Đáp án thường lên trước, đáp án đặc biệt luôn xếp ở dưới cùng
-                    keys = [...normalKeys, ...specialKeys];
-                }
-            }
-            q.sessionOptionsOrder = keys;
+            keys = this.shuffleQuestionOptions(q, this.settings.shuffleOptions);
         }
 
         keys.forEach((k, index) => {
