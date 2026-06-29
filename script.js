@@ -168,6 +168,8 @@ const app = {
             this.initPracticeSettings();
         } else if (screenId === 'screen-data-import') {
             this.renderQuestionManagerList();
+        } else if (screenId === 'screen-stats') {
+            this.renderStatsScreen();
         }
     },
 
@@ -702,6 +704,9 @@ const app = {
             }
         }
 
+        // Cập nhật thống kê câu hỏi sai
+        this.updateQuestionStats();
+
         // Lưu thống kê lịch sử
         this.saveHistoryStats(score, correctCount, wrongCount, unansweredCount, timeString);
 
@@ -858,12 +863,379 @@ const app = {
     },
 
     resetStats: function() {
-        if (confirm("Bạn có chắc chắn muốn xóa tất cả thống kê tiến trình học tập và lịch sử làm bài không?")) {
+        if (confirm("Bạn có chắc chắn muốn xóa tất cả thống kê tiến trình học tập, lịch sử và thống kê câu sai không?")) {
             localStorage.removeItem('studyHistoryStats');
             localStorage.removeItem('practiceProgress');
             localStorage.removeItem('studyHistoryList');
+            localStorage.removeItem('quizQuestionStats');
             this.updateHomeStats();
             alert("Đã xóa dữ liệu thành công!");
+        }
+    },
+
+    updateQuestionStats: function() {
+        if (this.isReviewing) return;
+
+        let questionStats = localStorage.getItem('quizQuestionStats');
+        if (!questionStats) {
+            questionStats = {};
+        } else {
+            try {
+                questionStats = JSON.parse(questionStats);
+            } catch (e) {
+                questionStats = {};
+            }
+        }
+
+        this.activeQuestions.forEach((q, idx) => {
+            const userAns = this.userAnswers[idx];
+            if (userAns !== undefined) {
+                const isCorrect = userAns === q.correct;
+                if (!questionStats[q.id]) {
+                    questionStats[q.id] = {
+                        id: q.id,
+                        attempts: 0,
+                        correct: 0,
+                        wrong: 0,
+                        lastAttemptTime: 0
+                    };
+                }
+                
+                questionStats[q.id].attempts += 1;
+                if (isCorrect) {
+                    questionStats[q.id].correct += 1;
+                } else {
+                    questionStats[q.id].wrong += 1;
+                }
+                questionStats[q.id].lastAttemptTime = Date.now();
+            }
+        });
+
+        localStorage.setItem('quizQuestionStats', JSON.stringify(questionStats));
+    },
+
+    renderStatsScreen: function() {
+        const statsList = document.getElementById('stats-q-list');
+        if (!statsList) return;
+
+        let questionStats = localStorage.getItem('quizQuestionStats');
+        if (questionStats) {
+            try {
+                questionStats = JSON.parse(questionStats);
+            } catch (e) {
+                questionStats = {};
+            }
+        } else {
+            questionStats = {};
+        }
+
+        const search = document.getElementById('stats-search').value.toLowerCase().trim();
+        const filterChap = document.getElementById('stats-filter-chap').value;
+        const sortBy = document.getElementById('stats-sort-by').value;
+        const minAttempts = parseInt(document.getElementById('stats-min-attempts').value) || 0;
+
+        let totalAttempted = 0;
+        let totalWrongQuestions = 0;
+        let grandAttempts = 0;
+        let grandCorrect = 0;
+
+        Object.values(questionStats).forEach(s => {
+            if (s.attempts > 0) {
+                totalAttempted++;
+                grandAttempts += s.attempts;
+                grandCorrect += s.correct;
+                if (s.wrong > 0) {
+                    totalWrongQuestions++;
+                }
+            }
+        });
+
+        document.getElementById('stats-total-attempted').innerText = totalAttempted;
+        document.getElementById('stats-total-wrong').innerText = totalWrongQuestions;
+        
+        let avgAccuracy = grandAttempts > 0 ? Math.round((grandCorrect / grandAttempts) * 100) : 0;
+        document.getElementById('stats-avg-accuracy').innerText = avgAccuracy + '%';
+
+        let filteredStats = [];
+
+        defaultQuestions.forEach(q => {
+            const stat = questionStats[q.id];
+            const attempts = stat ? stat.attempts : 0;
+            const wrong = stat ? stat.wrong : 0;
+            const correct = stat ? stat.correct : 0;
+            const wrongPct = attempts > 0 ? Math.round((wrong / attempts) * 100) : 0;
+
+            if (wrong === 0) return;
+            if (attempts < minAttempts) return;
+            if (filterChap !== 'all' && q.chapter !== parseInt(filterChap)) return;
+
+            if (search) {
+                const textMatch = (q.text || "").toLowerCase().includes(search);
+                const idMatch = (q.id + "").toLowerCase().includes(search);
+                const optionMatch = Object.values(q.options || {}).some(opt => opt.toLowerCase().includes(search));
+                if (!textMatch && !idMatch && !optionMatch) return;
+            }
+
+            filteredStats.push({
+                question: q,
+                attempts: attempts,
+                correct: correct,
+                wrong: wrong,
+                wrongPct: wrongPct
+            });
+        });
+
+        if (sortBy === 'wrong-desc') {
+            filteredStats.sort((a, b) => b.wrong - a.wrong);
+        } else if (sortBy === 'pct-desc') {
+            filteredStats.sort((a, b) => {
+                if (b.wrongPct !== a.wrongPct) {
+                    return b.wrongPct - a.wrongPct;
+                }
+                return b.wrong - a.wrong;
+            });
+        } else if (sortBy === 'attempts-desc') {
+            filteredStats.sort((a, b) => b.attempts - a.attempts);
+        }
+
+        statsList.innerHTML = '';
+
+        const practiceBtn = document.getElementById('btn-stats-practice');
+        const examBtn = document.getElementById('btn-stats-exam');
+        if (filteredStats.length === 0) {
+            statsList.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 40px 0;">Không tìm thấy câu hỏi sai nào phù hợp!</div>`;
+            if (practiceBtn) practiceBtn.disabled = true;
+            if (examBtn) examBtn.disabled = true;
+            return;
+        } else {
+            if (practiceBtn) practiceBtn.disabled = false;
+            if (examBtn) examBtn.disabled = false;
+        }
+
+        filteredStats.forEach(item => {
+            const q = item.question;
+            const card = document.createElement('div');
+            card.className = 'stats-q-item';
+            
+            let pctClass = 'low';
+            if (item.wrongPct >= 75) {
+                pctClass = 'high';
+            } else if (item.wrongPct >= 40) {
+                pctClass = 'medium';
+            }
+
+            const cleanText = (q.text || "").replace(/\[CHƯA CÓ NỘI DUNG\].*$/, '');
+
+            card.innerHTML = `
+                <div class="stats-q-header">
+                    <span class="stats-q-title">Câu ${q.id} (Chương ${q.chapter})</span>
+                    <div class="stats-q-badges">
+                        <span class="stats-badge-wrong-pct ${pctClass}">Tỷ lệ sai: ${item.wrongPct}%</span>
+                    </div>
+                </div>
+                <div class="stats-q-body">${cleanText}</div>
+                <div class="stats-q-stats-row">
+                    <span>Số lần làm: <strong>${item.attempts}</strong></span>
+                    <span style="color: var(--success);">Đúng: <strong>${item.correct}</strong></span>
+                    <span style="color: var(--danger);">Sai: <strong>${item.wrong}</strong></span>
+                </div>
+                <button class="stats-q-details-btn" onclick="app.toggleStatsQDetails(this)">
+                    👁️ Hiện đáp án & lựa chọn
+                </button>
+                <div class="stats-q-details">
+                    <div class="stats-q-options">
+                        <div class="${q.correct === 'A' ? 'stats-q-correct-opt' : ''}">A. ${q.options.A || ''}</div>
+                        <div class="${q.correct === 'B' ? 'stats-q-correct-opt' : ''}">B. ${q.options.B || ''}</div>
+                        <div class="${q.correct === 'C' ? 'stats-q-correct-opt' : ''}">C. ${q.options.C || ''}</div>
+                        <div class="${q.correct === 'D' ? 'stats-q-correct-opt' : ''}">D. ${q.options.D || ''}</div>
+                    </div>
+                </div>
+            `;
+            statsList.appendChild(card);
+        });
+
+        const footerText = document.createElement('div');
+        footerText.style.textAlign = 'center';
+        footerText.style.color = 'var(--text-muted)';
+        footerText.style.fontSize = '0.85rem';
+        footerText.style.padding = '15px 0 10px 0';
+        footerText.innerText = `Đang hiển thị ${filteredStats.length} câu hỏi sai phù hợp.`;
+        statsList.appendChild(footerText);
+    },
+
+    toggleStatsQDetails: function(btn) {
+        const details = btn.nextElementSibling;
+        if (details.classList.contains('active')) {
+            details.classList.remove('active');
+            btn.innerHTML = '👁️ Hiện đáp án & lựa chọn';
+        } else {
+            details.classList.add('active');
+            btn.innerHTML = '👁️ Ẩn đáp án & lựa chọn';
+        }
+    },
+
+    startPracticeOnWrong: function() {
+        initAudio();
+
+        let questionStats = localStorage.getItem('quizQuestionStats');
+        if (questionStats) {
+            try {
+                questionStats = JSON.parse(questionStats);
+            } catch (e) {
+                questionStats = {};
+            }
+        } else {
+            questionStats = {};
+        }
+
+        const search = document.getElementById('stats-search').value.toLowerCase().trim();
+        const filterChap = document.getElementById('stats-filter-chap').value;
+        const minAttempts = parseInt(document.getElementById('stats-min-attempts').value) || 0;
+
+        let pool = [];
+
+        defaultQuestions.forEach(q => {
+            const stat = questionStats[q.id];
+            const attempts = stat ? stat.attempts : 0;
+            const wrong = stat ? stat.wrong : 0;
+
+            if (wrong === 0) return;
+            if (attempts < minAttempts) return;
+            if (filterChap !== 'all' && q.chapter !== parseInt(filterChap)) return;
+
+            if (search) {
+                const textMatch = (q.text || "").toLowerCase().includes(search);
+                const idMatch = (q.id + "").toLowerCase().includes(search);
+                const optionMatch = Object.values(q.options || {}).some(opt => opt.toLowerCase().includes(search));
+                if (!textMatch && !idMatch && !optionMatch) return;
+            }
+
+            pool.push(q);
+        });
+
+        if (pool.length === 0) {
+            alert("Không có câu hỏi sai nào phù hợp để ôn tập!");
+            return;
+        }
+
+        pool.sort((a, b) => {
+            const statA = questionStats[a.id];
+            const statB = questionStats[b.id];
+            const wrongA = statA ? statA.wrong : 0;
+            const wrongB = statB ? statB.wrong : 0;
+            return wrongB - wrongA;
+        });
+
+        this.settings.showAnswerImmediate = true;
+        this.settings.shuffleOptions = true;
+
+        this.mode = 'practice';
+        this.activeQuestions = pool;
+        this.currentIndex = 0;
+        this.userAnswers = {};
+        this.flaggedQuestions = {};
+        this.gridFilter = 'all';
+        this.startTime = Date.now();
+
+        this.activeQuestions.forEach(q => {
+            this.shuffleQuestionOptions(q, this.settings.shuffleOptions);
+        });
+
+        document.getElementById('sidebar-timer-container').style.display = 'none';
+        document.getElementById('sidebar-mode-badge').innerText = 'Ôn Tập Câu Hay Sai';
+
+        document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.remove('active'));
+        document.getElementById('chip-filter-all').classList.add('active');
+
+        this.navigate('screen-quiz');
+        this.renderQuestion();
+        this.updateStats();
+        this.renderQuestionGrid();
+    },
+
+    startExamOnWrong: function() {
+        initAudio();
+
+        let questionStats = localStorage.getItem('quizQuestionStats');
+        if (questionStats) {
+            try {
+                questionStats = JSON.parse(questionStats);
+            } catch (e) {
+                questionStats = {};
+            }
+        } else {
+            questionStats = {};
+        }
+
+        const search = document.getElementById('stats-search').value.toLowerCase().trim();
+        const filterChap = document.getElementById('stats-filter-chap').value;
+        const minAttempts = parseInt(document.getElementById('stats-min-attempts').value) || 0;
+
+        let pool = [];
+
+        defaultQuestions.forEach(q => {
+            const stat = questionStats[q.id];
+            const attempts = stat ? stat.attempts : 0;
+            const wrong = stat ? stat.wrong : 0;
+
+            if (wrong === 0) return;
+            if (attempts < minAttempts) return;
+            if (filterChap !== 'all' && q.chapter !== parseInt(filterChap)) return;
+
+            if (search) {
+                const textMatch = (q.text || "").toLowerCase().includes(search);
+                const idMatch = (q.id + "").toLowerCase().includes(search);
+                const optionMatch = Object.values(q.options || {}).some(opt => opt.toLowerCase().includes(search));
+                if (!textMatch && !idMatch && !optionMatch) return;
+            }
+
+            pool.push(q);
+        });
+
+        if (pool.length === 0) {
+            alert("Không có câu hỏi sai nào phù hợp để thi thử!");
+            return;
+        }
+
+        let examQuestions = [...pool];
+        examQuestions.sort(() => Math.random() - 0.5);
+        if (examQuestions.length > 20) {
+            examQuestions = examQuestions.slice(0, 20);
+        }
+
+        this.mode = 'exam';
+        this.activeQuestions = examQuestions;
+        this.currentIndex = 0;
+        this.userAnswers = {};
+        this.flaggedQuestions = {};
+        this.gridFilter = 'all';
+        this.settings.showAnswerImmediate = false;
+        this.settings.shuffleOptions = true;
+        this.startTime = Date.now();
+
+        this.activeQuestions.forEach(q => {
+            this.shuffleQuestionOptions(q, this.settings.shuffleOptions);
+        });
+
+        this.timeRemaining = 20 * 60;
+        document.getElementById('sidebar-timer-container').style.display = 'block';
+        document.getElementById('sidebar-mode-badge').innerText = 'Thi Thử Câu Hay Sai';
+        this.startTimer();
+
+        document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.remove('active'));
+        document.getElementById('chip-filter-all').classList.add('active');
+
+        this.navigate('screen-quiz');
+        this.renderQuestion();
+        this.updateStats();
+        this.renderQuestionGrid();
+    },
+
+    resetQuestionStatsOnly: function() {
+        if (confirm("Bạn có chắc chắn muốn xóa thống kê và lịch sử câu trả lời sai không? Chỉ số số lần làm sai của các câu hỏi sẽ quay về 0.")) {
+            localStorage.removeItem('quizQuestionStats');
+            this.renderStatsScreen();
+            alert("Đã xóa dữ liệu thống kê câu sai thành công!");
         }
     },
 

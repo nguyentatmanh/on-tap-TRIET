@@ -61,6 +61,15 @@
                     </div>
                     <span class="arrow-right">→</span>
                 </div>
+
+                <div class="menu-card btn-stats-card" onclick="app.navigate('screen-stats')">
+                    <div class="card-icon">📈</div>
+                    <div class="card-info">
+                        <h3>Thống Kê Câu Sai</h3>
+                        <p>Xem xác suất câu sai nhiều nhất, xem lại đáp án và ôn tập tập trung các câu hay sai.</p>
+                    </div>
+                    <span class="arrow-right">→</span>
+                </div>
             </div>
 
             <div class="home-stats-preview mt-4">
@@ -248,6 +257,63 @@
                 <div class="manager-q-list" id="manager-q-list" style="display: flex; flex-direction: column; gap: 16px; max-height: 500px; overflow-y: auto; padding-right: 8px; margin-top: 15px;">
                     <!-- Dữ liệu câu hỏi được render qua script.js -->
                 </div>
+            </div>
+        </div>
+
+        <!-- Screen: Statistics & Analysis -->
+        <div id="screen-stats" class="screen glass-panel">
+            <button class="btn-back" onclick="app.navigate('screen-home')">← Quay lại</button>
+            <h2>Thống Kê Xác Suất Câu Sai</h2>
+            <p class="section-desc">Phân tích chi tiết các câu hỏi bạn thường làm sai để cải thiện hiệu quả học tập.</p>
+            
+            <!-- Stats overview cards -->
+            <div class="stats-overview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <div class="stat-overview-card" style="padding: 20px; border-radius: 16px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); text-align: center;">
+                    <span style="font-family: var(--font-heading); font-size: 2rem; font-weight: 800; color: var(--primary);" id="stats-total-attempted">0</span>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; font-weight: 500;">Câu hỏi đã làm ít nhất 1 lần</p>
+                </div>
+                <div class="stat-overview-card" style="padding: 20px; border-radius: 16px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); text-align: center;">
+                    <span style="font-family: var(--font-heading); font-size: 2rem; font-weight: 800; color: var(--danger);" id="stats-total-wrong">0</span>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; font-weight: 500;">Câu hỏi đang bị thống kê sai</p>
+                </div>
+                <div class="stat-overview-card" style="padding: 20px; border-radius: 16px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); text-align: center;">
+                    <span style="font-family: var(--font-heading); font-size: 2rem; font-weight: 800; color: var(--secondary);" id="stats-avg-accuracy">0%</span>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; font-weight: 500;">Tỷ lệ chính xác trung bình</p>
+                </div>
+            </div>
+
+            <!-- Stats filters & Actions -->
+            <div class="stats-controls" style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; flex: 1; min-width: 300px;">
+                    <input type="text" id="stats-search" class="glass-input" style="flex: 1; min-width: 180px;" placeholder="🔍 Tìm kiếm nội dung hoặc mã câu hỏi sai..." oninput="app.renderStatsScreen()">
+                    <select id="stats-filter-chap" class="glass-input" style="max-width: 140px;" onchange="app.renderStatsScreen()">
+                        <option value="all">Tất cả chương</option>
+                        <option value="1">Chương 1</option>
+                        <option value="2">Chương 2</option>
+                        <option value="3">Chương 3</option>
+                    </select>
+                    <select id="stats-sort-by" class="glass-input" style="max-width: 180px;" onchange="app.renderStatsScreen()">
+                        <option value="wrong-desc">Làm sai nhiều nhất</option>
+                        <option value="pct-desc">Tỷ lệ % sai cao nhất</option>
+                        <option value="attempts-desc">Số lần làm nhiều nhất</option>
+                    </select>
+                    <select id="stats-min-attempts" class="glass-input" style="max-width: 150px;" onchange="app.renderStatsScreen()">
+                        <option value="0">Tất cả số lần làm</option>
+                        <option value="1">Làm ít nhất 1 lần</option>
+                        <option value="2">Làm ít nhất 2 lần</option>
+                        <option value="3">Làm ít nhất 3 lần</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" style="width: auto; padding: 12px 18px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: var(--danger); font-weight: 600;" onclick="app.resetQuestionStatsOnly()">🗑️ Reset chỉ số sai</button>
+                    <button id="btn-stats-practice" class="btn btn-primary" style="width: auto; padding: 12px 18px;" onclick="app.startPracticeOnWrong()">⚡ Ôn câu hay sai</button>
+                    <button id="btn-stats-exam" class="btn btn-secondary" style="width: auto; padding: 12px 18px; background: linear-gradient(to right, var(--secondary), #d946ef);" onclick="app.startExamOnWrong()">⏱️ Thi thử câu sai</button>
+                </div>
+            </div>
+
+            <!-- Stats list of wrong questions -->
+            <div id="stats-q-list" class="stats-q-list" style="display: flex; flex-direction: column; gap: 16px; max-height: 500px; overflow-y: auto; padding-right: 8px; margin-top: 15px;">
+                <!-- Statistics items rendered via JS -->
             </div>
         </div>
 
