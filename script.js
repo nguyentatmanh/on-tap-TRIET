@@ -65,6 +65,8 @@ const app = {
         shuffleOptions: true
     },
     isReviewing: false,
+    currentExamSetIndex: null,
+    selectedExamSetIndex: null,
 
     init: function() {
         // Áp dụng theme đã lưu
@@ -170,6 +172,8 @@ const app = {
             this.renderQuestionManagerList();
         } else if (screenId === 'screen-stats') {
             this.renderStatsScreen();
+        } else if (screenId === 'screen-exam-settings') {
+            this.initExamSettings();
         }
     },
 
@@ -371,12 +375,26 @@ const app = {
         const timeSetting = document.querySelector('input[name="exam-time"]:checked').value;
         const totalMinutes = parseInt(timeSetting);
 
-        // Pick 40 random questions: ~13 from chap1, 13 from chap2, 14 from chap3
-        const q1 = this.getRandomSubset(defaultQuestions.filter(q => q.chapter === 1), 13);
-        const q2 = this.getRandomSubset(defaultQuestions.filter(q => q.chapter === 2), 13);
-        const q3 = this.getRandomSubset(defaultQuestions.filter(q => q.chapter === 3), 14);
+        const examType = document.querySelector('input[name="exam-type-selection"]:checked').value;
+        let examQuestions = [];
 
-        let examQuestions = [...q1, ...q2, ...q3];
+        if (examType === 'sets') {
+            if (this.selectedExamSetIndex === null) {
+                alert("Vui lòng chọn một bộ đề!");
+                return;
+            }
+            const sets = this.getExamSets();
+            const selectedSet = sets[this.selectedExamSetIndex];
+            examQuestions = JSON.parse(JSON.stringify(selectedSet.questions));
+            this.currentExamSetIndex = this.selectedExamSetIndex;
+        } else {
+            const q1 = this.getRandomSubset(defaultQuestions.filter(q => q.chapter === 1), 13);
+            const q2 = this.getRandomSubset(defaultQuestions.filter(q => q.chapter === 2), 13);
+            const q3 = this.getRandomSubset(defaultQuestions.filter(q => q.chapter === 3), 14);
+            examQuestions = [...q1, ...q2, ...q3];
+            this.currentExamSetIndex = null;
+        }
+
         // Shuffle the final 40 questions
         examQuestions.sort(() => Math.random() - 0.5);
 
@@ -397,7 +415,9 @@ const app = {
 
         this.timeRemaining = totalMinutes * 60;
         document.getElementById('sidebar-timer-container').style.display = 'block';
-        document.getElementById('sidebar-mode-badge').innerText = 'Đang Thi Thử';
+        document.getElementById('sidebar-mode-badge').innerText = this.currentExamSetIndex !== null 
+            ? `Thi Bộ Đề ${this.currentExamSetIndex + 1}` 
+            : 'Đang Thi Thử';
         this.startTimer();
         
         // Reset chip active
@@ -417,6 +437,166 @@ const app = {
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
         return shuffled.slice(0, count);
+    },
+
+    initExamSettings: function() {
+        this.selectedExamSetIndex = null;
+        const selectedRadio = document.querySelector('input[name="exam-type-selection"]:checked');
+        if (selectedRadio) {
+            this.toggleExamTypeSelection();
+        } else {
+            const randomRadio = document.querySelector('input[name="exam-type-selection"][value="random"]');
+            if (randomRadio) {
+                randomRadio.checked = true;
+            }
+            this.toggleExamTypeSelection();
+        }
+        const startBtn = document.getElementById('btn-start-exam');
+        if (startBtn) {
+            startBtn.innerText = '⏱️ Bắt Đầu Tính Giờ Làm Bài';
+            startBtn.disabled = false;
+        }
+    },
+
+    toggleExamTypeSelection: function() {
+        const val = document.querySelector('input[name="exam-type-selection"]:checked').value;
+        const container = document.getElementById('exam-sets-container');
+        const startBtn = document.getElementById('btn-start-exam');
+        
+        if (val === 'sets') {
+            container.style.display = 'block';
+            this.renderExamSets();
+            if (this.selectedExamSetIndex === null) {
+                startBtn.innerText = '⏱️ Vui lòng chọn một bộ đề';
+                startBtn.disabled = true;
+            } else {
+                startBtn.innerText = `⏱️ Bắt Đầu Làm Bộ Đề ${this.selectedExamSetIndex + 1}`;
+                startBtn.disabled = false;
+            }
+        } else {
+            container.style.display = 'none';
+            startBtn.innerText = '⏱️ Bắt Đầu Tính Giờ Làm Bài';
+            startBtn.disabled = false;
+        }
+    },
+
+    renderExamSets: function() {
+        const grid = document.getElementById('exam-sets-grid');
+        const progressLbl = document.getElementById('exam-sets-progress-lbl');
+        if (!grid) return;
+        
+        const sets = this.getExamSets();
+        
+        let completedSets = localStorage.getItem('completedExamSets');
+        if (completedSets) {
+            try { completedSets = JSON.parse(completedSets); } catch (e) { completedSets = {}; }
+        } else {
+            completedSets = {};
+        }
+        
+        let completedCount = 0;
+        grid.innerHTML = '';
+        
+        sets.forEach(set => {
+            const hasCompleted = completedSets[set.index] !== undefined;
+            if (hasCompleted) completedCount++;
+            
+            const card = document.createElement('div');
+            card.className = `exam-set-card${this.selectedExamSetIndex === set.index ? ' selected' : ''}`;
+            
+            let statusHTML = '';
+            if (hasCompleted) {
+                const scoreVal = completedSets[set.index].score;
+                statusHTML = `
+                    <span class="exam-set-status completed">✓ Đã làm</span>
+                    <span class="exam-set-score">${scoreVal.toFixed(1)}đ</span>
+                `;
+            } else {
+                statusHTML = `
+                    <span class="exam-set-status pending">○ Chưa làm</span>
+                `;
+            }
+            
+            card.innerHTML = `
+                <div class="exam-set-title">${set.name}</div>
+                <div class="exam-set-range">Chương 1: 10 câu | Chương 2: 20 câu | Chương 3: 10 câu</div>
+                <div class="exam-set-footer">
+                    ${statusHTML}
+                </div>
+            `;
+            
+            card.onclick = () => {
+                this.selectedExamSetIndex = set.index;
+                this.renderExamSets();
+                
+                const startBtn = document.getElementById('btn-start-exam');
+                if (startBtn) {
+                    startBtn.innerText = `⏱️ Bắt Đầu Làm Bộ Đề ${set.index + 1}`;
+                    startBtn.disabled = false;
+                }
+            };
+            
+            grid.appendChild(card);
+        });
+        
+        if (progressLbl) {
+            progressLbl.innerText = `Tiến trình: ${completedCount}/${sets.length} bộ đề đã hoàn thành`;
+        }
+    },
+
+    getExamSets: function() {
+        const pool1 = defaultQuestions.filter(q => q.chapter === 1);
+        const pool2 = defaultQuestions.filter(q => q.chapter === 2);
+        const pool3 = defaultQuestions.filter(q => q.chapter === 3);
+        
+        const n1 = pool1.length;
+        const n2 = pool2.length;
+        const n3 = pool3.length;
+        
+        const K = Math.max(
+            Math.ceil(n1 / 10),
+            Math.ceil(n2 / 20),
+            Math.ceil(n3 / 10)
+        );
+        
+        const getIndicesForPool = (poolSize, targetCount, setIndex, totalSets) => {
+            const indices = [];
+            if (poolSize === 0) return indices;
+            
+            if (poolSize >= targetCount) {
+                let start = 0;
+                if (totalSets > 1) {
+                    start = Math.round(setIndex * (poolSize - targetCount) / (totalSets - 1));
+                }
+                for (let j = 0; j < targetCount; j++) {
+                    indices.push(start + j);
+                }
+            } else {
+                for (let j = 0; j < targetCount; j++) {
+                    indices.push(j % poolSize);
+                }
+            }
+            return indices;
+        };
+        
+        const sets = [];
+        for (let i = 0; i < K; i++) {
+            const indices1 = getIndicesForPool(n1, 10, i, K);
+            const indices2 = getIndicesForPool(n2, 20, i, K);
+            const indices3 = getIndicesForPool(n3, 10, i, K);
+            
+            const qs1 = indices1.map(idx => pool1[idx]);
+            const qs2 = indices2.map(idx => pool2[idx]);
+            const qs3 = indices3.map(idx => pool3[idx]);
+            
+            sets.push({
+                index: i,
+                name: `Bộ đề thi thử ${i + 1}`,
+                questions: [...qs1, ...qs2, ...qs3]
+            });
+        }
+        
+        return sets;
     },
 
     startTimer: function() {
@@ -714,6 +894,26 @@ const app = {
             localStorage.removeItem('practiceProgress');
         }
 
+        // Lưu kết quả bộ đề thi thử
+        if (this.mode === 'exam' && this.currentExamSetIndex !== null) {
+            let completedSets = localStorage.getItem('completedExamSets');
+            if (completedSets) {
+                try { completedSets = JSON.parse(completedSets); } catch (e) { completedSets = {}; }
+            } else {
+                completedSets = {};
+            }
+            const currentRecord = completedSets[this.currentExamSetIndex];
+            if (!currentRecord || score > currentRecord.score) {
+                completedSets[this.currentExamSetIndex] = {
+                    score: score,
+                    timestamp: new Date().toLocaleString('vi-VN'),
+                    correct: correctCount,
+                    total: this.activeQuestions.length
+                };
+                localStorage.setItem('completedExamSets', JSON.stringify(completedSets));
+            }
+        }
+
         // Tạo danh sách câu hỏi đã làm trực quan
         this.renderResultsReviewList();
 
@@ -860,6 +1060,20 @@ const app = {
             avgScore = sum / stats.examScores.length;
         }
         document.getElementById('home-stat-avg-score').innerText = avgScore.toFixed(2);
+
+        // Cập nhật tiến độ bộ đề thi thử
+        const sets = this.getExamSets();
+        let completedSets = localStorage.getItem('completedExamSets');
+        if (completedSets) {
+            try { completedSets = JSON.parse(completedSets); } catch (e) { completedSets = {}; }
+        } else {
+            completedSets = {};
+        }
+        const completedCount = Object.keys(completedSets).length;
+        const setsSpan = document.getElementById('home-stat-exam-sets');
+        if (setsSpan) {
+            setsSpan.innerText = `${completedCount}/${sets.length}`;
+        }
     },
 
     resetStats: function() {
@@ -868,6 +1082,7 @@ const app = {
             localStorage.removeItem('practiceProgress');
             localStorage.removeItem('studyHistoryList');
             localStorage.removeItem('quizQuestionStats');
+            localStorage.removeItem('completedExamSets');
             this.updateHomeStats();
             alert("Đã xóa dữ liệu thành công!");
         }

@@ -2049,3 +2049,106 @@ h2 {
     font-weight: 700;
 }
 
+/* Exam Sets Grid & Cards */
+.exam-sets-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 10px;
+}
+@media (min-width: 576px) {
+    .exam-sets-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (min-width: 992px) {
+    .exam-sets-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.exam-set-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 18px 22px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    gap: 10px;
+}
+
+.exam-set-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    background: var(--option-hover);
+    box-shadow: var(--shadow-sm);
+}
+
+.exam-set-card.selected {
+    border-color: var(--secondary);
+    background: var(--secondary-light);
+    box-shadow: 0 0 0 1.5px var(--secondary);
+}
+
+.exam-set-card.selected::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, var(--secondary), #d946ef);
+}
+
+.exam-set-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.exam-set-range {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.exam-set-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 10px;
+    margin-top: 4px;
+    font-size: 0.85rem;
+}
+
+.exam-set-status {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.exam-set-status.completed {
+    color: var(--success);
+}
+
+.exam-set-status.pending {
+    color: var(--text-muted);
+}
+
+.exam-set-score {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--secondary);
+    background: rgba(223, 169, 116, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(223, 169, 116, 0.2);
+}
+

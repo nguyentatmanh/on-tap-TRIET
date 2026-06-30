@@ -87,6 +87,10 @@
                         <span id="home-stat-avg-score">0.0</span>
                         <p>Điểm TB thi thử</p>
                     </div>
+                    <div class="stat-box">
+                        <span id="home-stat-exam-sets">0/0</span>
+                        <p>Bộ đề hoàn thành</p>
+                    </div>
                 </div>
                 <div style="display: flex; gap: 12px; justify-content: center; margin-top: 18px; flex-wrap: wrap;">
                     <button class="btn btn-outline btn-small" onclick="app.showHistoryModal()" style="width: auto; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
@@ -210,9 +214,40 @@
         <div id="screen-exam-settings" class="screen glass-panel">
             <button class="btn-back" onclick="app.navigate('screen-home')">← Quay lại</button>
             <h2>Bắt Đầu Thi Thử Nghiêm Túc</h2>
-            <p class="note-exam">Đề thi gồm 40 câu hỏi được bốc ngẫu nhiên từ hệ thống (phân bố đều ở cả 3 chương). Thang điểm 10.</p>
+            <p class="note-exam">Chọn chế độ thi thử ngẫu nhiên hoặc luyện trọn bộ các đề thi được phân chia từ ngân hàng câu hỏi ôn tập.</p>
             
             <div class="settings-group">
+                <label><strong>1. Chọn Hình Thức Đề Thi:</strong></label>
+                <div class="checkbox-cards-group" style="margin-bottom: 20px;">
+                    <label class="checkbox-card">
+                        <input type="radio" name="exam-type-selection" value="random" checked onchange="app.toggleExamTypeSelection()">
+                        <span class="card-check-inner">
+                            <span class="chap-num">🎲 Đề Thi Ngẫu Nhiên</span>
+                            <span class="chap-desc">Đề thi 40 câu bốc ngẫu nhiên từ kho câu hỏi (C1: 13, C2: 13, C3: 14).</span>
+                        </span>
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="radio" name="exam-type-selection" value="sets" onchange="app.toggleExamTypeSelection()">
+                        <span class="card-check-inner">
+                            <span class="chap-num">📋 Thi Theo Bộ Đề</span>
+                            <span class="chap-desc">Chia đều các câu hỏi thành các bộ đề 40 câu (C1: 10, C2: 20, C3: 10) để luyện hết 100% câu hỏi.</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Exam Sets Grid (Only shown when 'sets' is selected) -->
+            <div class="settings-group" id="exam-sets-container" style="display: none; margin-top: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <label style="margin: 0;"><strong>2. Chọn Bộ Đề Thi Muốn Làm:</strong></label>
+                    <span id="exam-sets-progress-lbl" style="font-size: 0.95rem; font-weight: 700; color: var(--primary);">Tiến trình: 0/0 bộ đề đã hoàn thành</span>
+                </div>
+                <div class="exam-sets-grid" id="exam-sets-grid">
+                    <!-- Dynamic Exam Set Cards loaded by JS -->
+                </div>
+            </div>
+
+            <div class="settings-group" style="margin-top: 24px;">
                 <label><strong>Chọn Thời Gian Làm Bài:</strong></label>
                 <div class="radio-group time-selector">
                     <label class="radio-card">
@@ -225,7 +260,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-secondary btn-full mt-4 btn-start" onclick="app.startExam()">
+            <button id="btn-start-exam" class="btn btn-secondary btn-full mt-4 btn-start" onclick="app.startExam()">
                 ⏱️ Bắt Đầu Tính Giờ Làm Bài
             </button>
         </div>
